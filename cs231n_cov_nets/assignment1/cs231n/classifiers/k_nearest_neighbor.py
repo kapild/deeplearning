@@ -71,7 +71,7 @@ class KNearestNeighbor(object):
         # training point, and store the result in dists[i, j]. You should   #
         # not use a loop over dimension.                                    #
         #####################################################################
-        diff_element = X[i, :] - self.X_train[j, :];
+        diff_element = X[i, :] - self.X_train[j, :]
         dists[i,j] = np.linalg.norm(diff_element)
         #####################################################################
         #                       END OF YOUR CODE                            #
@@ -94,7 +94,9 @@ class KNearestNeighbor(object):
       # Compute the l2 distance between the ith test point and all training #
       # points, and store the result in dists[i, :].                        #
       #######################################################################
-      pass
+      x_test = X[i, :]
+      diff_element = self.X_train - x_test
+      dists[i,:] = np.linalg.norm(diff_element, axis=1)
       #######################################################################
       #                         END OF YOUR CODE                            #
       #######################################################################
@@ -154,7 +156,10 @@ class KNearestNeighbor(object):
       # neighbors. Store these labels in closest_y.                           #
       # Hint: Look up the function numpy.argsort.                             #
       #########################################################################
-      pass
+      sorted_indices = np.argsort(dists[i,:])[:k]
+      closest_y = self.y_train[sorted_indices]
+      # import pdb
+      # pdb.set_trace()
       #########################################################################
       # TODO:                                                                 #
       # Now that you have found the labels of the k nearest neighbors, you    #
@@ -162,7 +167,9 @@ class KNearestNeighbor(object):
       # Store this label in y_pred[i]. Break ties by choosing the smaller     #
       # label.                                                                #
       #########################################################################
-      pass
+      counts = np.bincount(closest_y)
+      y_pred[i] = np.argmax(counts)
+
       #########################################################################
       #                           END OF YOUR CODE                            # 
       #########################################################################
