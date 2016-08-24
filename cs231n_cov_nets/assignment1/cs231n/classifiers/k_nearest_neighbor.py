@@ -112,6 +112,14 @@ class KNearestNeighbor(object):
     num_test = X.shape[0]
     num_train = self.X_train.shape[0]
     dists = np.zeros((num_test, num_train)) 
+    X_test_norm = np.square(np.linalg.norm(X, axis=1))
+    X_train_norm = np.square(np.linalg.norm(self.X_train, axis=1))
+
+    X_test_norm_arr = np.array([X_test_norm] * num_train).transpose()
+    X_train_norm_arr = np.array([X_train_norm.transpose()] * num_test)
+    X_test_train_dot = X.dot(self.X_train.transpose())
+    dists = np.sqrt(X_test_norm_arr  + X_train_norm_arr -  (2 * X_test_train_dot))
+
     #########################################################################
     # TODO:                                                                 #
     # Compute the l2 distance between all test points and all training      #
@@ -124,7 +132,8 @@ class KNearestNeighbor(object):
     # HINT: Try to formulate the l2 distance using matrix multiplication    #
     #       and two broadcast sums.                                         #
     #########################################################################
-    pass
+    # import pdb
+    # pdb.set_trace()
     #########################################################################
     #                         END OF YOUR CODE                              #
     #########################################################################

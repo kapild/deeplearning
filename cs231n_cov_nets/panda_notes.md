@@ -20,3 +20,15 @@
 	  y_pred[i] = np.argmax(counts)
 
 	```
+- Get norm of an array on one axis:
+
+	```
+	np.square(np.linalg.norm(X, axis=1))
+	```
+
+- Duplicate the arrays across matrix
+	
+	```
+	np.array([X_test_norm] * num_train)	
+	```
+
