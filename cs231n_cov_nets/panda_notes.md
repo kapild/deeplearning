@@ -32,3 +32,15 @@
 	np.array([X_test_norm] * num_train)	
 	```
 
+- Get indices of zero elements from the list
+	
+	```
+    idxs = np.flatnonzero(y_train == y)
+	```
+
+- Get "n" random indices fom list of indices
+	
+	```
+    idxs = np.random.choice(idxs, samples_per_class, replace=False)	```
+
+
