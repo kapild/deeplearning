@@ -28,17 +28,23 @@ def svm_loss_naive(W, X, y, reg):
   for i in xrange(num_train):
     scores = X[i].dot(W)
     correct_class_score = scores[y[i]]
+    margin_gt_zero = 0
     for j in xrange(num_classes):
       if j == y[i]:
         continue
       margin = scores[j] - correct_class_score + 1 # note delta = 1
       if margin > 0:
+        margin_gt_zero += 1
         loss += margin
+        dW[:,j] += X[i]
+    dW[:,y[i]] += margin_gt_zero * -1 * X[i]
+
 
   # Right now the loss is a sum over all training examples, but we want it
   # to be an average instead so we divide by num_train.
   loss /= num_train
-
+  dW /= num_train
+  dW += reg * W
   # Add regularization to the loss.
   loss += 0.5 * reg * np.sum(W * W)
 
@@ -69,7 +75,17 @@ def svm_loss_vectorized(W, X, y, reg):
   # Implement a vectorized version of the structured SVM loss, storing the    #
   # result in loss.                                                           #
   #############################################################################
-  pass
+  X_dot_W = X.dot(W)
+  num_train = X.shape[0]
+  num_class = W.shape[1]
+  correct_class_scores = X_dot_W[range(num_train), y]
+
+  diff_scores = X_dot_W - np.array([correct_class_scores] * num_class ).transpose()  + 1
+  diff_scores[range(num_train), y] = 0.0
+  margins = np.maximum(0, diff_scores)
+  loss = np.sum(margins)/num_train
+
+  loss += 0.5 * reg * np.sum(W * W)
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
@@ -84,7 +100,20 @@ def svm_loss_vectorized(W, X, y, reg):
   # to reuse some of the intermediate values that you used to compute the     #
   # loss.                                                                     #
   #############################################################################
-  pass
+  # import pdb
+  # pdb.set_trace()
+
+   
+  X_margins_fire = np.zeros(margins.shape)
+  X_margins_fire[margins > 0] = 1
+  # total number of times margins grater than zero
+  margins_in_correct_class = np.sum(X_margins_fire, axis = 1)
+  X_margins_fire[range(num_train), y] = - margins_in_correct_class
+
+  gradient_loss = X.transpose().dot(X_margins_fire)
+  gradient_loss /= num_train
+
+  dW = gradient_loss + reg * W
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################

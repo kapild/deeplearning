@@ -43,4 +43,38 @@
 	```
     idxs = np.random.choice(idxs, samples_per_class, replace=False)	```
 
+- Making a row vector from numpy
 
+	```
+	np.ones((X_train.shape[0], 1))
+	```
+- Stack a row vector 
+
+	```
+	np.hstack([X_train, np.ones((X_train.shape[0], 1))])	
+	```
+- Radom sample from normal distribution
+	
+	```
+	sigma * np.random.randn(...) + mu		
+	
+	```
+	-  Two-by-four array of samples from N(3, 6.25):
+	
+		```
+		 2.5 * np.random.randn(2, 4) + 3	
+		```
+	
+- Random range
+
+	```
+	random.randrange(stop)
+	```
+- Finding maximum value index in an array
+	
+	```
+	y_pred = np.argmax(X_W_dot, axis=1)
+	```
+	
+	
+    	
