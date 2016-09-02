@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 class TwoLayerNet(object):
   """
   A two-layer fully-connected neural network. The net has an input dimension of
-  N, a hidden layer dimension of H, and performs classification over C classes.
+  D, a hidden layer dimension of H, and performs classification over C classes.
   We train the network with a softmax loss function and L2 regularization on the
   weight matrices. The network uses a ReLU nonlinearity after the first fully
   connected layer.
@@ -74,7 +74,26 @@ class TwoLayerNet(object):
     # Store the result in the scores variable, which should be an array of      #
     # shape (N, C).                                                             #
     #############################################################################
-    pass
+    # 1. add bias 1 to input variable X (X_0)
+    # import pdb
+    # pdb.set_trace()
+    
+    bias = np.ones(N)[:, np.newaxis]
+    X = np.hstack((X, bias))
+    W = np.vstack((W1, b1))
+    # 2. compute dot product
+    X_dot_W = X.dot(W)
+    
+    # 3. compute ReLu activation
+    a1 = np.maximum(0, X_dot_W)
+
+    # 4. add bias to activation units to be multiplied by w2
+    a2 = np.hstack((a1, np.ones(N)[:, np.newaxis]))
+    # stack second layer bias with second layer weight size ((H+1) * C)
+    W = np.vstack((W2,b2))
+
+    # activation for second layer.
+    scores = a2.dot(W)
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -82,6 +101,12 @@ class TwoLayerNet(object):
     # If the targets are not given then jump out, we're done
     if y is None:
       return scores
+
+    exp_scores = np.exp(scores)
+    probs = exp_scores/np.sum(exp_scores, axis=1)[:, np.newaxis]
+    scores = probs
+    #yi_probs = probs[range(N), y]
+
 
     # Compute the loss
     loss = None
