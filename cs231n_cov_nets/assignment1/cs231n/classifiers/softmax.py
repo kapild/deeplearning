@@ -33,6 +33,7 @@ def softmax_loss_naive(W, X, y, reg):
   num_class = W.shape[1]
   num_feature = X.shape[1]
 
+  sum_loss = 0.0
   for index in range(num_train):
     X_dot_W = X[index].dot(W)
     intermediate_scores = []
@@ -41,25 +42,35 @@ def softmax_loss_naive(W, X, y, reg):
       if class_index == y[index]:
         e_fyi = X_dot_W[class_index]   
       intermediate_scores.append(X_dot_W[class_index])
-
     intermediate_scores = np.array(intermediate_scores)      
     max_val = np.max(intermediate_scores)
-
     e_fyi -= max_val
     intermediate_scores -= max_val
+    sum_loss += np.log(get_prob_at_index_k(y[index], intermediate_scores))
+    # calculate gradient for dW  
+    for class_index in range(num_class):
+      # (yi - pk) * xi
+      yi_minus_pk = - ((class_index == y[index]) - get_prob_at_index_k(class_index, intermediate_scores))
+      factor = yi_minus_pk * X[index]
+      dW[:, class_index] += factor
 
-    intermediate_loss = np.exp(e_fyi)/np.sum(np.exp(intermediate_scores)) * 1 / num_train;
-    loss += intermediate_loss
+  loss = sum_loss/num_train + 0.5 * reg * np.sum(W * W) 
 
-  loss += 0.5 * reg * np.sum(W * W) 
+  loss = -1 * loss
 
-  loss = -1 * np.log(loss)
+  dW  = dW/num_train + reg * W
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
-
   return loss, dW
 
+
+def get_prob_at_index_k(index_k, intermediate_scores):
+  return np.exp(intermediate_scores[index_k])/np.sum(np.exp(intermediate_scores))
+
+def softmax(z):
+  sum_on_rows = np.sum(np.exp(z), axis = 1)
+  return np.exp(z)/sum_on_rows[:, np.newaxis]
 
 def softmax_loss_vectorized(W, X, y, reg):
   """
@@ -77,10 +88,36 @@ def softmax_loss_vectorized(W, X, y, reg):
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  pass
+  num_train = X.shape[0]
+  num_class = W.shape[1]
+  num_feature = X.shape[1]
+
+  X_dot_W = X.dot(W)
+  # get the max, this is done for numeric instability.
+  X_dot_W_max = np.max(X_dot_W, axis = 1)
+  # subtract the max from each row.
+  X_dot_W_norm = X_dot_W - X_dot_W_max[:, np.newaxis]
+
+  soft_vector = softmax(X_dot_W_norm)
+
+  # get only the values of p(i) which has the correct class. 
+  soft_vector_fired = soft_vector[(range(num_train), y)]
+  sum_loss = np.sum(np.log(soft_vector_fired))
+  loss = sum_loss/num_train + 0.5 * reg * np.sum(W * W) 
+  loss = -1 * loss
+
+  # start of gradient calculation, 
+  # 1. we have to work in dimensions of N * C first.
+  y_rows_matrix = np.zeros((num_train, num_class))
+  y_rows_matrix[(range(num_train), y)] = 1
+
+  pi_rows_matrix = soft_vector
+  diff_yi_pi = pi_rows_matrix  - y_rows_matrix
+
+  yi_pi_xi = X.transpose().dot(diff_yi_pi)
+  dW  = yi_pi_xi/num_train + reg * W
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
 
   return loss, dW
-
