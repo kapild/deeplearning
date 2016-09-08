@@ -69,15 +69,16 @@ class TwoLayerNet(object):
 
     # Compute the forward pass
     scores = None
+    num_train = X.shape[0]
     #############################################################################
     # TODO: Perform the forward pass, computing the class scores for the input. #
     # Store the result in the scores variable, which should be an array of      #
     # shape (N, C).                                                             #
     #############################################################################
-    # 1. add bias 1 to input variable X (X_0)
     # import pdb
     # pdb.set_trace()
     
+    # 1. add bias 1 to input variable X (X_0)
     bias = np.ones(N)[:, np.newaxis]
     X = np.hstack((X, bias))
     W = np.vstack((W1, b1))
@@ -102,11 +103,6 @@ class TwoLayerNet(object):
     if y is None:
       return scores
 
-    exp_scores = np.exp(scores)
-    probs = exp_scores/np.sum(exp_scores, axis=1)[:, np.newaxis]
-    scores = probs
-    #yi_probs = probs[range(N), y]
-
 
     # Compute the loss
     loss = None
@@ -117,7 +113,15 @@ class TwoLayerNet(object):
     # classifier loss. So that your results match ours, multiply the            #
     # regularization loss by 0.5                                                #
     #############################################################################
-    pass
+    exp_scores = np.exp(scores)
+    probs = exp_scores/np.sum(exp_scores, axis=1)[:, np.newaxis]
+    
+    yi_probs = probs[range(N), y]
+    log_loss = - np.sum(np.log(yi_probs))/num_train
+    w1_loss = 0.5 * reg * np.sum(W1 * W1)
+    w2_loss = 0.5 * reg * np.sum(W2 * W2)
+
+    loss = log_loss + w1_loss + w2_loss
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
