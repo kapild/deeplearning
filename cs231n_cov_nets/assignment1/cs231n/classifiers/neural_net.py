@@ -63,6 +63,7 @@ class TwoLayerNet(object):
       with respect to the loss function; has the same keys as self.params.
     """
     # Unpack variables from the params dictionary
+
     W1, b1 = self.params['W1'], self.params['b1']
     W2, b2 = self.params['W2'], self.params['b2']
     N, D = X.shape
@@ -79,22 +80,27 @@ class TwoLayerNet(object):
     # pdb.set_trace()
     
     # 1. add bias 1 to input variable X (X_0)
-    bias = np.ones(N)[:, np.newaxis]
-    X = np.hstack((X, bias))
-    W = np.vstack((W1, b1))
-    # 2. compute dot product
-    X_dot_W = X.dot(W)
+    # bias = np.ones(N)[:, np.newaxis]
+    # X = np.hstack((X, bias))
+    # W = np.vstack((W1, b1))
+    # # 2. compute dot product
+    # X_dot_W = X.dot(W)
     
-    # 3. compute ReLu activation
-    a1 = np.maximum(0, X_dot_W)
+    # # 3. compute ReLu activation
+    # a1 = np.maximum(0, X_dot_W)
 
-    # 4. add bias to activation units to be multiplied by w2
-    a2 = np.hstack((a1, np.ones(N)[:, np.newaxis]))
-    # stack second layer bias with second layer weight size ((H+1) * C)
-    W = np.vstack((W2,b2))
+    # # 4. add bias to activation units to be multiplied by w2
+    # a2 = np.hstack((a1, np.ones(N)[:, np.newaxis]))
+    # # stack second layer bias with second layer weight size ((H+1) * C)
+    # W = np.vstack((W2,b2))
 
-    # activation for second layer.
-    scores = a2.dot(W)
+    # # activation for second layer.
+    # scores = a2.dot(W)
+
+
+
+    hidden_layer = np.maximum(0, np.dot(X, W1) + b1) # note, ReLU activation
+    scores = np.dot(hidden_layer, W2) + b2
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -103,7 +109,7 @@ class TwoLayerNet(object):
     if y is None:
       return scores
 
-
+    
     # Compute the loss
     loss = None
     #############################################################################
@@ -113,15 +119,24 @@ class TwoLayerNet(object):
     # classifier loss. So that your results match ours, multiply the            #
     # regularization loss by 0.5                                                #
     #############################################################################
-    exp_scores = np.exp(scores)
-    probs = exp_scores/np.sum(exp_scores, axis=1)[:, np.newaxis]
+    # exp_scores = np.exp(scores)
+    # probs = exp_scores/np.sum(exp_scores, axis=1)[:, np.newaxis]
     
-    yi_probs = probs[range(N), y]
-    log_loss = - np.sum(np.log(yi_probs))/num_train
-    w1_loss = 0.5 * reg * np.sum(W1 * W1)
-    w2_loss = 0.5 * reg * np.sum(W2 * W2)
+    # yi_probs = probs[range(N), y]
+    # log_loss = - np.sum(np.log(yi_probs))/num_train
+    # w1_loss = 0.5 * reg * np.sum(W1 * W1)
+    # w2_loss = 0.5 * reg * np.sum(W2 * W2)
 
-    loss = log_loss + w1_loss + w2_loss
+    # loss = log_loss + w1_loss + w2_loss
+
+    exp_scores = np.exp(scores)
+    probs = exp_scores / np.sum(exp_scores, axis=1, keepdims=True) # [N x K]
+    
+    # compute the loss: average cross-entropy loss and regularization
+    corect_logprobs = -np.log(probs[range(N),y])
+    data_loss = np.sum(corect_logprobs)/N
+    reg_loss = 0.5*reg*np.sum(W1*W1) + 0.5*reg*np.sum(W2*W2)
+    loss = data_loss + reg_loss
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -134,10 +149,46 @@ class TwoLayerNet(object):
     # grads['W1'] should store the gradient on W1, and be a matrix of same size #
     #############################################################################
     pass
+    # https://github.com/bruceoutdoors/CS231n/blob/master/assignment1/cs231n/classifiers/neural_net.py#L118
+    # dscores = probs
+    # dscores[range(N),y] -= 1
+    # dscores /= N
+
+    # # W2 and b2
+    # grads['W2'] = np.dot(a1.T, dscores)
+    # grads['b2'] = np.sum(dscores, axis=0)
+    # # next backprop into hidden layer
+    # dhidden = np.dot(dscores, W2.T)
+    # # backprop the ReLU non-linearity
+    # dhidden[a1 <= 0] = 0
+ # compute the gradient on scores
+    dscores = probs
+    dscores[range(N),y] -= 1
+    dscores /= N    
+    dW2 = np.dot(hidden_layer.T, dscores)
+    db2 = np.sum(dscores, axis=0)    
+    # next backprop into hidden layer
+    dhidden = np.dot(dscores, W2.T)
+    # backprop the ReLU non-linearity
+    dhidden[hidden_layer <= 0] = 0
+    # finally into W,b
+    dW1 = np.dot(X.T, dhidden)
+    db1 = np.sum(dhidden, axis=0)
+    
+    # add regularization gradient contribution
+    dW2 += reg * W2
+    dW1 += reg * W1    
+
+    # # finally into W,b
+    grads['W1'] = dW1
+    grads['b1'] = db1
+
+#   add regularization gradient contribution
+    grads['W2'] = dW2
+    grads['b2'] = db2    
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
-
     return loss, grads
 
   def train(self, X, y, X_val, y_val,
@@ -162,6 +213,7 @@ class TwoLayerNet(object):
     - verbose: boolean; if true print progress during optimization.
     """
     num_train = X.shape[0]
+    batch_size = np.minimum(num_train, batch_size)
     iterations_per_epoch = max(num_train / batch_size, 1)
 
     # Use SGD to optimize the parameters in self.model
@@ -177,11 +229,13 @@ class TwoLayerNet(object):
       # TODO: Create a random minibatch of training data and labels, storing  #
       # them in X_batch and y_batch respectively.                             #
       #########################################################################
-      pass
+      batch_random_indx = np.random.choice(range(num_train), batch_size, replace=False)
+      X_batch = X[batch_random_indx]
+      y_batch = y[batch_random_indx]     
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
-
+              
       # Compute loss and gradients using the current minibatch
       loss, grads = self.loss(X_batch, y=y_batch, reg=reg)
       loss_history.append(loss)
@@ -192,7 +246,10 @@ class TwoLayerNet(object):
       # using stochastic gradient descent. You'll need to use the gradients   #
       # stored in the grads dictionary defined above.                         #
       #########################################################################
-      pass
+      self.params['W1'] += -learning_rate * grads['W1']
+      self.params['b1'] += -learning_rate * grads['b1']
+      self.params['W2'] += -learning_rate * grads['W2']
+      self.params['b2'] += -learning_rate * grads['b2']
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -233,11 +290,17 @@ class TwoLayerNet(object):
       to have class c, where 0 <= c < C.
     """
     y_pred = None
+    z1 = X.dot(self.params["W1"]) + self.params["b1"]
+    a1 = np.maximum(0, z1)
+    z2 = a1.dot(self.params["W2"]) + self.params["b2"]
+    exp_scores = np.exp(z2)
+    probs = exp_scores / np.sum(exp_scores, axis=1, keepdims=True) # [N x K]
+
 
     ###########################################################################
     # TODO: Implement this function; it should be VERY simple!                #
     ###########################################################################
-    pass
+    y_pred = np.argmax(probs, axis=1)
     ###########################################################################
     #                              END OF YOUR CODE                           #
     ###########################################################################
