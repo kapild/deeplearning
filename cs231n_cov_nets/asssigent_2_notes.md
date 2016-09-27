@@ -39,3 +39,78 @@ which is X
 ### Loss function
 
 Verify SoftMax and SVM loss equation. [here](https://github.com/kapild/deeplearning/blob/cs231n_cov_nets/cs231n_cov_nets/assignment2/cs231n/layers.py#L506)
+
+
+## Add Parameters update
+
+### Momemtum
+
+### RMSPROP
+
+### Adam
+
+
+
+## Data Pre processing
+
+### Zero Mean and center data: 
+- Subtract mean image to each example
+- 	Mean across 3 channels
+
+
+### Weight Initilaization
+- Never initalize weight to all ZERO.
+
+- Init Use normal distribution:
+
+	```
+	0.01 np.random.randn(H1, H2)
+
+	```
+	- But, even with this stratget for 7-8 layers, the STD becomes zero. 
+	- And, with vanishing gradient the dx in backpropagation is bad.
+
+- Use `Xavier initilization`:
+	
+	```
+	 np.random.randn(H1, H2)/ (np.sqrt(H1))
+
+	```
+- Xavier works with tanh(x) but doesn't work with Relu.
+
+	```
+	 np.random.randn(H1, H2)/ (np.sqrt(H1/2))
+
+	```
+
+
+### Batch normalization
+
+-  Normalize via
+	
+	 ```
+	 X = x - mean / np.sqrt(var (x))
+	 ```
+- Inserted after FullyConneted affine layer before Relu (non linear layer)
+- But, you shift and scale and learn gamma and beta
+
+	 ```
+	 X = gamma * x_hat + beta
+	 ```
+
+
+- Check your training
+	- 	Loss shoud be log 1/N with no regularization
+	-  It should go up with regularization
+	-  Overrfit data with small data set
+	-  To find the `best learning rate`
+		- If loss doesn't go down then learning rate.  1e-6
+		- With e6 it goes to NaN so bad.: 1e6
+		- Find a rough region in between using binary search
+
+	- Coarse to fine strategy using small epoch
+	
+		``` java
+			 10 ** uniform(-6, 6)
+		```	 
+	- Use random initilization
