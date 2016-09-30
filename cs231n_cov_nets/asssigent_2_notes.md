@@ -85,11 +85,15 @@ Verify SoftMax and SVM loss equation. [here](https://github.com/kapild/deeplearn
 
 
 ### Batch normalization
+- At training time, a batch normalization layer uses a minibatch of data to estimate the mean and standard deviation of each feature.
+-  A running average of these means and standard deviations is kept during training, and at test time these running averages are used to center and normalize features.
+-   the batch normalization layer includes learnable shift and scale parameters for each feature dimension: To un learn
 
--  Normalize via
+
+-  Normalize via : zero mean and unit variance
 	
 	 ```
-	 X = x - mean / np.sqrt(var (x))
+	 X = x - mean / np.sqrt(var (x) + eps)
 	 ```
 - Inserted after FullyConneted affine layer before Relu (non linear layer)
 - But, you shift and scale and learn gamma and beta

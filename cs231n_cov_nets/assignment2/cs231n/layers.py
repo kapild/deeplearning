@@ -178,7 +178,7 @@ def batchnorm_forward(x, gamma, beta, bn_param):
   running_mean = bn_param.get('running_mean', np.zeros(D, dtype=x.dtype))
   running_var = bn_param.get('running_var', np.zeros(D, dtype=x.dtype))
 
-  out, cache = None, None
+  out, cache, x_norm = None, None, None
   if mode == 'train':
     #############################################################################
     # TODO: Implement the training-time forward pass for batch normalization.   #
@@ -193,7 +193,17 @@ def batchnorm_forward(x, gamma, beta, bn_param):
     # the momentum variable to update the running mean and running variance,    #
     # storing your result in the running_mean and running_var variables.        #
     #############################################################################
-    pass
+    # import pdb
+    # pdb.set_trace()
+    batch_mean = np.mean(x, axis = 0)
+    batch_variance = np.var(x, axis = 0)
+
+    x_norm = (x - batch_mean)/np.sqrt(batch_variance + eps)
+    batch_variance_p_eps  =  batch_variance + eps
+    out = gamma * x_norm  + beta
+    
+    running_mean = momentum * running_mean + (1 - momentum) * batch_mean
+    running_var  = momentum * running_var  + (1 - momentum) * batch_variance
     #############################################################################
     #                             END OF YOUR CODE                              #
     #############################################################################
@@ -204,7 +214,10 @@ def batchnorm_forward(x, gamma, beta, bn_param):
     # and shift the normalized data using gamma and beta. Store the result in   #
     # the out variable.                                                         #
     #############################################################################
-    pass
+    batch_variance = running_var
+    batch_mean = running_mean
+    x_norm =  (x - running_mean)/np.sqrt(running_var + eps)
+    out = gamma * x_norm + beta
     #############################################################################
     #                             END OF YOUR CODE                              #
     #############################################################################
@@ -214,6 +227,7 @@ def batchnorm_forward(x, gamma, beta, bn_param):
   # Store the updated running means back into bn_param
   bn_param['running_mean'] = running_mean
   bn_param['running_var'] = running_var
+  cache = running_mean, running_var, x_norm, gamma, beta, batch_variance, x, batch_mean
 
   return out, cache
 
@@ -240,7 +254,18 @@ def batchnorm_backward(dout, cache):
   # TODO: Implement the backward pass for batch normalization. Store the      #
   # results in the dx, dgamma, and dbeta variables.                           #
   #############################################################################
-  pass
+  running_mean, running_var, x_norm, gamma, beta, batch_variance_p_eps, x, batch_mean = cache
+
+  dgamma = np.sum(x_norm *dout, axis = 0)
+  dbeta = np.sum(dout, axis = 0)
+
+  dh = dout * gamma
+
+  N = dout.shape[0]
+
+  dx = (1. / N) * gamma * (batch_variance_p_eps)**(-1. / 2.) * (N * dout - np.sum(dout, axis=0)
+    - (x - batch_mean) * (batch_variance_p_eps)**(-1.0) * np.sum(dout * (x - batch_mean ), axis=0))
+  
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
@@ -270,7 +295,17 @@ def batchnorm_backward_alt(dout, cache):
   # should be able to compute gradients with respect to the inputs in a       #
   # single statement; our implementation fits on a single 80-character line.  #
   #############################################################################
-  pass
+  running_mean, running_var, x_norm, gamma, beta, batch_variance_p_eps, x, batch_mean = cache
+
+  dgamma = np.sum(x_norm *dout, axis = 0)
+  dbeta = np.sum(dout, axis = 0)
+
+  dh = dout * gamma
+
+  N = dout.shape[0]
+
+  dx = (1. / N) * gamma * (batch_variance_p_eps)**(-1. / 2.) * (N * dout - np.sum(dout, axis=0)
+    - (x - batch_mean) * (batch_variance_p_eps)**(-1.0) * np.sum(dout * (x - batch_mean ), axis=0))
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
