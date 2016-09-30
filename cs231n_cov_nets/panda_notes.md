@@ -76,5 +76,19 @@
 	y_pred = np.argmax(X_W_dot, axis=1)
 	```
 	
-	
+
+- Log space 
+
+	```
+	weight_scales = np.logspace(-4, 0, num=20)
+		Running weight scale 1 / 20, 1.000000e-04
+		Running weight scale 2 / 20, 1.623777e-04
+		Running weight scale 3 / 20, 2.636651e-04
+		Running weight scale 4 / 20, 4.281332e-04
+		...
+		Running weight scale 19 / 20, 6.158482e-01
+		Running weight scale 20 / 20, 1.000000e+00			
+	```	
     	
+plt.semilogx(weight_scales, best_val_accs, '-o', label='baseline')
+plt.semilogx(weight_scales, bn_best_val_accs, '-o', label='batchnorm')    	
