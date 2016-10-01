@@ -83,6 +83,13 @@ Verify SoftMax and SVM loss equation. [here](https://github.com/kapild/deeplearn
 
 	```
 
+### Hyperparameter ranges. 
+- Search for hyperparameters on log scale. For example, a typical sampling of the learning rate would look as follows: 
+```
+	learning_rate = 10 ** uniform(-6, 1). 
+```
+- That is, we are generating a random number from a uniform distribution, but then raising it to the power of 10. 
+
 
 ### Batch normalization
 - At training time, a batch normalization layer uses a minibatch of data to estimate the mean and standard deviation of each feature.
@@ -118,3 +125,25 @@ Verify SoftMax and SVM loss equation. [here](https://github.com/kapild/deeplearn
 			 10 ** uniform(-6, 6)
 		```	 
 	- Use random initilization
+
+### Dropout. 
+- Search for hyperparameters on log scale. For example, a typical sampling of the learning rate would look as follows: 
+- higher = less dropout
+- Train
+
+	```
+	  H1 = np.maximum(0, np.dot(W1, X) + b1)
+	  U1 = np.random.rand(*H1.shape) < p 
+	  H1 *= U1 # drop!
+	```
+- Test
+
+	```
+	  H1 = np.maximum(0, np.dot(W1, X) + b1) * p # NOTE: scale the activation
+ 	```
+- Inverted droput
+- Train
+
+	```
+	  U1 = (np.random.rand(*H1.shape) < p) / p
+	```

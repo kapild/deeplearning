@@ -266,8 +266,6 @@ class FullyConnectedNet(object):
 
     # this will store the cache of various layers of af_relu layer.
     cache_cache = {}
-    # delete this? 
-    # scores, af_cache = affine_forward(out, W2, B2)
 
     reg = self.reg
     input_items = X.shape[0]
@@ -284,6 +282,12 @@ class FullyConnectedNet(object):
                                                          gamma, beta, bn_param)
         else:
             af_out, cache = affine_relu_forward(out, w_affine_relu, b_affine_relu)
+
+
+        if self.use_dropout:
+            af_out, dpout_cache = dropout_forward(af_out, self.dropout_param)
+            cache = (cache, dpout_cache)
+
         cache_cache[w_b_layer] = cache
         out = af_out
 
@@ -338,12 +342,23 @@ class FullyConnectedNet(object):
         w_b_layer = str(index + 1)
         weight_index_str = "W" + str(w_b_layer)
         bias_index_str = "b" + str(w_b_layer)
+        cache_cache_all = cache_cache[w_b_layer]
+        # drop backward pass before relu and batch norm layer. 
+        if self.use_dropout:
+            dp_caches = cache_cache[w_b_layer]
+            dropout_cache_index = len(dp_caches) - 1
+            affline_relu_dout = dropout_backward(affline_relu_dout, dp_caches[dropout_cache_index])
+            cache_cache_all = dp_caches[0:dropout_cache_index][0]
+
         if self.use_batchnorm:
-            doutH, dWH, dBH, dgamma, dbeta = affine_back_prop_relu_backward(affline_relu_dout, cache_cache[w_b_layer])
+            doutH, dWH, dBH, dgamma, dbeta = affine_back_prop_relu_backward(affline_relu_dout, cache_cache_all)
             grads["gamma" + str(w_b_layer)] = dgamma
             grads["beta" + str(w_b_layer)] = dbeta
         else:
-            doutH, dWH, dBH = affine_relu_backward(affline_relu_dout, cache_cache[w_b_layer])
+            # import pdb
+            # pdb.set_trace()
+
+            doutH, dWH, dBH = affine_relu_backward(affline_relu_dout, cache_cache_all)
         affline_relu_dout = doutH
         dWH += reg * self.params[weight_index_str]  
         grads[weight_index_str] = dWH
