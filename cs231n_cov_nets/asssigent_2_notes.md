@@ -147,3 +147,4 @@ Verify SoftMax and SVM loss equation. [here](https://github.com/kapild/deeplearn
 	```
 	  U1 = (np.random.rand(*H1.shape) < p) / p
 	```
+### Convolution Networks. 

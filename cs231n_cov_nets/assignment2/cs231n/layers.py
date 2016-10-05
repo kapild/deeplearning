@@ -547,7 +547,56 @@ def conv_forward_naive(x, w, b, conv_param):
   # TODO: Implement the convolutional forward pass.                           #
   # Hint: you can use the function np.pad for padding.                        #
   #############################################################################
-  pass
+  
+  # init some parameters
+  N, C, H, W  = x.shape[0], x.shape[1], x.shape[2], x.shape[3]
+  F, C1, HH, WW = w.shape[0], w.shape[1], w.shape[2], w.shape[3]
+  bshape = b.shape[0]
+  assert C == C1
+  assert bshape == F
+  pad = conv_param.get("pad")
+  stride = conv_param.get("stride")
+  h_filter_size = 1 + (H + 2 * pad - HH) / stride
+  w_filter_size = 1 + (W + 2 * pad - WW) / stride
+
+  #############################################################################
+  #     pad the image first
+  #############################################################################
+  import pdb
+  x_padded = []
+  for n_index in range(N):
+    image_x = x[n_index]
+    pad_array = []
+    pad_array.append((0,0))
+    for channel_index in range(1, C):
+      pad_array.append((pad, pad))
+    image_x_pad = np.pad(image_x, pad_array, 'constant', constant_values=0)
+    x_padded.append(image_x_pad)
+
+  out = []
+  for n_index in range(N):
+    x_image = x_padded[n_index]
+    rows, cols  = x_image.shape[1], x_image.shape[2]
+    # print rows, cols
+    for filter_index in range(F):
+      w_filter = w[filter_index]
+      b_filter = b[filter_index]
+      filter_conv = []
+      for row_index in xrange(0, rows - HH + 1, stride):
+        for col_index in xrange(0, cols - WW + 1, stride):
+          conv_image = x_image[:, row_index: HH + row_index, col_index: WW + col_index]
+          # print "filter_index:%d, row_index:%d, col_index:%d" % (filter_index, row_index, col_index)
+          # print "n_index:%d, w_filter.shape:%s, conv_image.shape:%s" % (n_index, w_filter.shape, conv_image.shape)
+          shape_1 = np.prod(w_filter.shape)
+          shape_2 = np.prod(conv_image.shape)
+          assert shape_2 == shape_1
+          ff = w_filter.reshape(shape_1)
+          cc = conv_image.reshape(shape_1)  
+          conv_dot = cc.dot(ff) + b_filter
+          out.append(conv_dot)
+  out = np.array(out).reshape((N, F, h_filter_size, w_filter_size))
+  
+
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
