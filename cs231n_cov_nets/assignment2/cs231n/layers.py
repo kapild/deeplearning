@@ -616,17 +616,69 @@ def conv_backward_naive(dout, cache):
   - dx: Gradient with respect to x
   - dw: Gradient with respect to w
   - db: Gradient with respect to b
-  """
-  dx, dw, db = None, None, None
-  #############################################################################
-  # TODO: Implement the convolutional backward pass.                          #
-  #############################################################################
-  pass
-  #############################################################################
-  #                             END OF YOUR CODE                              #
-  #############################################################################
-  return dx, dw, db
+  # """
+  # dx, dw, db = None, None, None
+  # #############################################################################
+  # # TODO: Implement the convolutional backward pass.                          #
+  # #############################################################################
+  x, w, b, conv_param = cache
 
+  N, C, H, W  = x.shape[0], x.shape[1], x.shape[2], x.shape[3]
+  F, C1, HH, WW = w.shape[0], w.shape[1], w.shape[2], w.shape[3]
+  bshape = b.shape[0]
+  assert C == C1
+  assert bshape == F
+  pad = conv_param.get("pad")
+  stride = conv_param.get("stride")
+  h_filter_size = 1 + (H + 2 * pad - HH) / stride
+  w_filter_size = 1 + (W + 2 * pad - WW) / stride
+
+  # #############################################################################
+  # #     pad the image first and dout so that they are are easy to process.
+  # #############################################################################
+  x_padded = []
+  for n_index in range(N):
+    image_x = x[n_index]
+    pad_array = []
+    pad_array.append((0,0))
+    for channel_index in range(1, C):
+      pad_array.append((pad, pad))
+    image_x_pad = np.pad(image_x, pad_array, 'constant', constant_values=0)
+    x_padded.append(image_x_pad)
+
+  x_padded = np.array(x_padded)
+  #############################################################################
+  #     compute the error loss.
+  #############################################################################
+
+  import pdb
+  dx = np.array(len(x_padded) * [np.zeros(x_padded[0].shape)])
+  dw = np.zeros((w.shape))
+  db = np.zeros((b.shape))
+  # Alternatively can use.
+    # dx = np.zeros_like(x)
+    # dw = np.zeros_like(w)
+    # db = np.zeros_like(b)
+
+  for n_index in range(N):
+    rows, cols  = x_padded[0].shape[1], x_padded[0].shape[2]
+    for filter_index in range(F):
+      w_filter = w[filter_index]
+      for row_index in xrange(0, rows - HH + 1, stride):
+        for col_index in xrange(0, cols - WW + 1, stride):
+
+          x_conv_image = x_padded[n_index, :, row_index: HH + row_index, col_index: WW + col_index]
+          dout_padded_oj = dout[n_index, filter_index, row_index/stride, col_index/stride]
+          dx[n_index, :, row_index: HH + row_index, col_index: WW + col_index] += w_filter * dout_padded_oj
+
+          dw[filter_index] += x_conv_image * dout_padded_oj
+          db[filter_index] += dout_padded_oj
+
+  # unpad
+  dx = dx[:, :, pad:-pad, pad:-pad]
+
+  
+  return dx, dw, db  
 
 def max_pool_forward_naive(x, pool_param):
   """
