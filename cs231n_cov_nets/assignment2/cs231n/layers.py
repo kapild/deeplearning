@@ -699,11 +699,37 @@ def max_pool_forward_naive(x, pool_param):
   #############################################################################
   # TODO: Implement the max pooling forward pass                              #
   #############################################################################
-  pass
+
+  # init variables
+  N, C, H, W = x.shape[0], x.shape[1], x.shape[2], x.shape[3]
+  height = pool_param.get("pool_height")
+  width = pool_param.get("pool_width")
+  stride = pool_param.get("stride")
+
+  # for n in xrange(N):
+  #   for c in xrange(C):
+  #     for w in xrange(0, width):
+  #       for h in xrange(height):
+
+  h2 = (H - height)/stride + 1
+  w2 = (W - width)/stride + 1
+
+  out = np.zeros((N, C, h2, w2))
+  out_argmax = np.zeros((N, C, h2, w2))
+  # print out.shape
+  for n in xrange(N):
+    for c in xrange(C):
+      for row_index in xrange(0, H - height + 1, stride):
+        for col_index in xrange(0, W - width + 1, stride):
+          pool_image = x[n, c, row_index : row_index + height, col_index : col_index + width]
+          out[n, c, row_index/stride, col_index/stride] = np.max(pool_image)
+          out_argmax[n, c, row_index/stride, col_index/stride] = np.argmax(pool_image)
+
+
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
-  cache = (x, pool_param)
+  cache = (x, pool_param, out_argmax)
   return out, cache
 
 
@@ -718,11 +744,29 @@ def max_pool_backward_naive(dout, cache):
   Returns:
   - dx: Gradient with respect to x
   """
-  dx = None
   #############################################################################
   # TODO: Implement the max pooling backward pass                             #
   #############################################################################
-  pass
+  x, pool_param, out_argmax = cache
+  N, C, H, W = x.shape[0], x.shape[1], x.shape[2], x.shape[3]
+  height = pool_param.get("pool_height")
+  width = pool_param.get("pool_width")
+  stride = pool_param.get("stride")
+
+  dx = np.zeros_like(x)
+  for n in xrange(N):
+    for c in xrange(C):
+      for row_index in xrange(0, H - height + 1, stride):
+        for col_index in xrange(0, W - width + 1, stride):
+          argmax_location = out_argmax[n, c, row_index/stride, col_index/stride]
+          dout_i = dout[n, c, row_index/stride, col_index/stride]
+          index = 0
+          for i in range(0, height):
+            for j in range(0, width):
+              if (index == argmax_location):
+                dx[n, c, row_index : row_index + height, col_index : col_index + width][i,j] +=  dout_i
+              index += 1
+
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
