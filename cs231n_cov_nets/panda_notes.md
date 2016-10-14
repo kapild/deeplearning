@@ -91,4 +91,12 @@
 	```	
     	
 plt.semilogx(weight_scales, best_val_accs, '-o', label='baseline')
-plt.semilogx(weight_scales, bn_best_val_accs, '-o', label='batchnorm')    	
+plt.semilogx(weight_scales, bn_best_val_accs, '-o', label='batchnorm')    
+
+- Swap axes of an matrix:
+	
+	```
+	  x_swap = np.swapaxes(X, 0, 1)
+	  flat_x = x_swap.reshape(C, -1)
+
+	```	

@@ -151,3 +151,17 @@ Verify SoftMax and SVM loss equation. [here](https://github.com/kapild/deeplearn
 
 
   dx = np.array(len(x_padded) * [np.zeros(x_padded[0].shape)])
+
+	```
+	filter_size = W1.shape[2]
+	conv_param = {'stride': 1, 'pad': (filter_size - 1) / 2}
+	```
+
+- When we use the softmax loss, we expect the loss for random weights (and no regularization) to be about log(C) for C classes. 
+
+- Swap axes of an matrix:
+	```
+	  x_swap = np.swapaxes(X, 0, 1)
+	  flat_x = x_swap.reshape(C, -1)
+
+	```	
