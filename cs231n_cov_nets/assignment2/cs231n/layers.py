@@ -19,7 +19,7 @@ def affine_forward(x, w, b):
   - out: output, of shape (N, M)
   - cache: (x, w, b)
   """
-  out = None`
+  out = None
 
   #############################################################################
   # TODO: Implement the affine forward pass. Store the result in out. You     #
