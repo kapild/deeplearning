@@ -198,7 +198,6 @@ def word_embedding_forward(x, W):
   out, cache = None, None
   N, T = x.shape
   V, D = W.shape
-
   out = np.zeros((N, T, D))
   for n in range(N):
     for t in range(T):

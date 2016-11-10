@@ -100,3 +100,12 @@ plt.semilogx(weight_scales, bn_best_val_accs, '-o', label='batchnorm')
 	  flat_x = x_swap.reshape(C, -1)
 
 	```	
+	
+- Squeeze : removes one axis from the series
+
+```
+scores.shape == 1,2,1000
+argmax = np.squeeze(np.argmax(scores, axis=2))
+argmax.shape == 1,2
+```
+	
