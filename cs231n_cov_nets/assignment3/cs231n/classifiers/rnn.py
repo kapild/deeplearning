@@ -143,7 +143,10 @@ class CaptioningRNN(object):
     word_forward, embedding_cache = word_embedding_forward(captions_in, W_embed)
 
     # Step 3
-    rnn_NTH, rnn_cache = rnn_forward(word_forward, affine_first, Wx, Wh, b)
+    if self.cell_type == 'rnn':
+        rnn_NTH, rnn_lstm_cache = rnn_forward(word_forward, affine_first, Wx, Wh, b)
+    else:
+        rnn_NTH, rnn_lstm_cache = lstm_forward(word_forward, affine_first, Wx, Wh, b)
 
     # Step 4 
     affine_second, affine_second_cache = temporal_affine_forward(rnn_NTH, W_vocab, b_vocab )
@@ -162,7 +165,10 @@ class CaptioningRNN(object):
     affine_back2, dW_vocab, db_vocab = temporal_affine_backward(dout, affine_second_cache)
 
     # Step 3 back
-    dx, dh0, dWx, dWh, db = rnn_backward(affine_back2, rnn_cache)
+    if self.cell_type == 'rnn':
+        dx, dh0, dWx, dWh, db = rnn_backward(affine_back2, rnn_lstm_cache)
+    else:
+        dx, dh0, dWx, dWh, db = lstm_backward(affine_back2, rnn_lstm_cache)
 
     # Step 2 back
     dW_embed = word_embedding_backward(dx, embedding_cache)
@@ -242,10 +248,21 @@ class CaptioningRNN(object):
     # Current word (start word)
     capt = self._start * np.ones((N, 1), dtype=np.int32)
 
+    if self.cell_type == "lstm":        
+        prev_c = 0  
+
     for t in xrange(max_length):  # Let's go over the sequence
         word_embed, _ = word_embedding_forward(capt, W_embed)  
-        # Run a step of rnn
-        h, _ = rnn_step_forward(np.squeeze(word_embed), prev_h, Wx, Wh, b)
+        if self.cell_type == "rnn":
+            # Run a step of rnn
+            h, _ = rnn_step_forward(np.squeeze(word_embed), prev_h, Wx, Wh, b)
+        else:
+            import pdb
+            # pdb.set_trace()
+            h, prev_c, _ = lstm_step_forward(np.squeeze(word_embed), prev_h, prev_c, Wx, Wh, b)
+            # pdb.set_trace()
+            # h = h
+
 
         # Compute the score distrib over the dictionary
         scores, _ = temporal_affine_forward(h[:, np.newaxis, :], W_vocab, b_vocab)
