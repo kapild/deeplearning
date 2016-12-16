@@ -404,3 +404,30 @@ def affine_back_prop_relu_backward(dout, cache):
 
 
 
+def affine_backprop_forward(x, W, b, gamma, beta, bn_param):
+  """
+  Convenience layer that perorms an affine transform on batch norm
+
+  Inputs:
+  - x: Input to the affine layer
+  - w, b: Weights for the affine layer
+
+  Returns a tuple of:
+  - out: Output from the ReLU
+  - cache: Object to give to the backward pass
+  """
+  a, fc_cache = affine_forward(x, W, b)
+  bn_out, bn_cache = batchnorm_forward(a, gamma, beta, bn_param)
+
+  cache = (fc_cache, bn_cache)
+  return bn_out, cache
+
+
+
+def affine_backprop_backward(dout, cache):
+  (fc_cache, bn_cache) = cache
+  bn_out, dgamma, dbeta = batchnorm_backward(dout, bn_cache)
+  dx, dw, db =  affine_backward(bn_out, fc_cache)
+  return dx, dw, db, dgamma, dbeta
+
+

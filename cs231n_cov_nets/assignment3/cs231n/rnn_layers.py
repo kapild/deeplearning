@@ -433,6 +433,7 @@ def lstm_forward(x, h0, Wx, Wh, b):
   ##############################################################################
 
   return h, cache
+
 def lstm_backward(dh, cache):
   """
   Backward pass for an LSTM over an entire sequence of data.]
@@ -478,7 +479,6 @@ def lstm_backward(dh, cache):
   ##############################################################################
   #                               END OF YOUR CODE                             #
   ##############################################################################
-  
   return dx, dh0, dWx, dWh, db
 
 

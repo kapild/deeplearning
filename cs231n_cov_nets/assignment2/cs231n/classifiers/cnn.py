@@ -209,6 +209,28 @@ def conv_backprop_relu_pool_backward(dout, cache):
   return dx, dw, db, dgamma, dbeta
 
 
+def conv_batch_relu_forward(x, W, b, conv_param, gamma, beta, bn_param):
+  conv_a, conv_cache = conv_forward_fast(x, W, b, conv_param)
+  out, spatial_cache = spatial_batchnorm_forward(conv_a, gamma, beta, bn_param)
+  out, relu_cache = relu_forward(out)
+  cache = (conv_cache, spatial_cache, relu_cache)
+  return out, cache
+
+
+
+def conv_batch_relu_backward(dout, cache):
+  conv_cache, spatial_cache, relu_cache = cache
+  da = relu_backward(dout, relu_cache)
+  dsb, dgamma, dbeta = spatial_batchnorm_backward(da, spatial_cache)
+  dx, dw, db = conv_backward_fast(dsb, conv_cache)
+  return dx, dw, db, dgamma, dbeta
+
+
+  
+
+
+
+
   
 
 
