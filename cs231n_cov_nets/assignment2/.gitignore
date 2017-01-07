@@ -1,0 +1,9 @@
+../assignment1/.ipynb_checkpoints*
+.ipynb_checkpoints/*
+*checkpoint.ipynb
+*.datasets
+datasets/*
+*.swp
+*.pyc
+.env/*
+cs231n/datasets/*

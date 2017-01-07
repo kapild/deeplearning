@@ -76,5 +76,36 @@
 	y_pred = np.argmax(X_W_dot, axis=1)
 	```
 	
-	
+
+- Log space 
+
+	```
+	weight_scales = np.logspace(-4, 0, num=20)
+		Running weight scale 1 / 20, 1.000000e-04
+		Running weight scale 2 / 20, 1.623777e-04
+		Running weight scale 3 / 20, 2.636651e-04
+		Running weight scale 4 / 20, 4.281332e-04
+		...
+		Running weight scale 19 / 20, 6.158482e-01
+		Running weight scale 20 / 20, 1.000000e+00			
+	```	
     	
+plt.semilogx(weight_scales, best_val_accs, '-o', label='baseline')
+plt.semilogx(weight_scales, bn_best_val_accs, '-o', label='batchnorm')    
+
+- Swap axes of an matrix:
+	
+	```
+	  x_swap = np.swapaxes(X, 0, 1)
+	  flat_x = x_swap.reshape(C, -1)
+
+	```	
+	
+- Squeeze : removes one axis from the series
+
+```
+scores.shape == 1,2,1000
+argmax = np.squeeze(np.argmax(scores, axis=2))
+argmax.shape == 1,2
+```
+	
