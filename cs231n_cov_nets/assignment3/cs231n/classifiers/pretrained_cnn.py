@@ -58,7 +58,7 @@ class PretrainedCNN(object):
       self.params[k] = v.astype(dtype)
 
     if h5_file is not None:
-      self.load_weights(h5_file)
+      self.load_weights(h5_file, verbose=True)
 
   
   def load_weights(self, h5_file, verbose=False):
