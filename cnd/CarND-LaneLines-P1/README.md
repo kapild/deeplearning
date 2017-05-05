@@ -1,7 +1,6 @@
-#**Finding Lane Lines on the Road** 
+# **Finding Lane Lines on the Road** 
 
 
-**Finding Lane Lines on the Road**
 
 The goals / steps of this project are the following:
 
@@ -18,7 +17,7 @@ The goals / steps of this project are the following:
 
 ### Reflection
 
-###1. Describe your pipeline. As part of the description, explain how you modified the draw_lines() function.
+### 1. Describe your pipeline. As part of the description, explain how you modified the draw_lines() function.
 
 There are total of 6 stages of my Lane Finding Pipeline. Each stage takes input from the previous step and retruns the output to be used by next step. This also helps in Debugging.
 
@@ -161,7 +160,7 @@ Stages of Pipeline| Plots of Slopes
 :-------------------------:|:-------------------------:
 ![](./data/pics/white_mode_4_1.png)  |  ![](./data/pics/white_mode_4_2.png)
 
-###2. Identify potential shortcomings with your current pipeline
+### 2. Identify potential shortcomings with your current pipeline
 
 - One potential shortcoming is that if both positive adnd negative slopes fall on same side of the lane. Then the tracking outputs a wrong lane. Example 
 
@@ -170,7 +169,7 @@ Stages of Pipeline| Plots of Slopes
 - Another potential is that its very senstive to camera position. Since, `vertices` are fixed, `region_of_interest` results will change in case camera position is changed.
 
 
-###3. Suggest possible improvements to your pipeline
+### 3. Suggest possible improvements to your pipeline
 
 - One possible improvement would be to fit a regression line on the image track. This could be a next step over interpolation. Basically, least squares error. ...
 
@@ -178,7 +177,7 @@ Stages of Pipeline| Plots of Slopes
 - Use a running window of say 10 frames which can average the results not only on the lines but also on the ouputs from previous frames. 
 
 
-###4. Re Work on the pipeline
+### 4. Re Work on the pipeline
 
 - My last submission had issues with the `solidYellowLeft.mp4` file. 
 - The issue was identified in [Identify potential shortcomings with your current pipeline](####3) this README.
