@@ -1,16 +1,15 @@
-#**Finding Lane Lines on the Road** 
+# **Finding Lane Lines on the Road** 
 
 
-**Finding Lane Lines on the Road**
 
 The goals / steps of this project are the following:
 
 -  Make a pipeline that finds lane lines on the road
 
-![image100](./pics/laneLines_thirdPass.jpg)
+![image100](./data/pics/laneLines_thirdPass.jpg)
 
-[![image100](./pics/white_video_nail.png)](white.mp4)
-[![image100](./pics/yellow_video_nail.png)](yellow.mp4)
+[![image100](./data/pics/white_video_nail.png)](white.mp4)
+[![image100](./data/pics/yellow_video_nail.png)](yellow.mp4)
 
 
 
@@ -18,7 +17,7 @@ The goals / steps of this project are the following:
 
 ### Reflection
 
-###1. Describe your pipeline. As part of the description, explain how you modified the draw_lines() function.
+### 1. Describe your pipeline. As part of the description, explain how you modified the draw_lines() function.
 
 There are total of 6 stages of my Lane Finding Pipeline. Each stage takes input from the previous step and retruns the output to be used by next step. This also helps in Debugging.
 
@@ -70,7 +69,7 @@ Before going into detail og draw_lines(), I would like to add that I tried vario
  - This is the default mode and is already provided to us in the course. This iterates over all the segments of lines and draws that on the image. 
  - This is how the ouptut looks for this mode. As you can see, there are only patches of images which are detected as lanes. Also, the title of the image tells what paramter was used to run this image. 
 
-![image100](./pics/white_mode_0.png)
+![image100](./data/pics/white_mode_0.png)
 
 - All the other modes uses a common code, which is used to first partition positive slopes from negative slopes and then from each slope sort the points (x1) in increasing manner. 
 
@@ -95,7 +94,7 @@ Before going into detail og draw_lines(), I would like to add that I tried vario
 - This mode is for debugging purposes only. It takes a very simplistic approach. It just draws the line segments belonging to `Positive` slopes and `Negative` slopes. 
 - The line from postive slope is drawn with color `blue` whereas line from `negative` slope is drawn with color `green`
 - Here is output from `mode == 1` 
-![image100](./pics/white_mode_0.png)
+![image100](./data/pics/white_mode_0.png)
 
 
 ### Mode == 2
@@ -114,7 +113,7 @@ cv2.line(img, (x1, y1), (x2, y2), color, thickness)
 
 - Here is output from `mode == 2` 
 
-![image100](./pics/white_mode_2.png)
+![image100](./data/pics/white_mode_2.png)
 
 - You can see that some of the images doesn't return good result with this approach. 
 
@@ -151,7 +150,7 @@ cv2.line(img, (x1, y1), (x2, y2), color, thickness)
 ```
 - Here are the outputs from mode ==3 for various parameters.
 
-![image100](./pics/white_mode_3.png)
+![image100](./data/pics/white_mode_3.png)
 
 ### Mode == 4
 - This mode is just for fun and debugging and is used to plot various points and their slopes on map.
@@ -159,20 +158,90 @@ cv2.line(img, (x1, y1), (x2, y2), color, thickness)
 
 Stages of Pipeline| Plots of Slopes
 :-------------------------:|:-------------------------:
-![](./pics/white_mode_4_1.png)  |  ![](./pics/white_mode_4_2.png)
+![](./data/pics/white_mode_4_1.png)  |  ![](./data/pics/white_mode_4_2.png)
 
-###2. Identify potential shortcomings with your current pipeline
+### 2. Identify potential shortcomings with your current pipeline
 
 - One potential shortcoming is that if both positive adnd negative slopes fall on same side of the lane. Then the tracking outputs a wrong lane. Example 
 
-![image100](./pics/white_yellow_bad.png)
+![image100](./data/pics/white_yellow_bad.png)
 
 - Another potential is that its very senstive to camera position. Since, `vertices` are fixed, `region_of_interest` results will change in case camera position is changed.
 
 
-###3. Suggest possible improvements to your pipeline
+### 3. Suggest possible improvements to your pipeline
 
 - One possible improvement would be to fit a regression line on the image track. This could be a next step over interpolation. Basically, least squares error. ...
 
 - Fit the line using polynomial points, and use better estimation like curves etc
 - Use a running window of say 10 frames which can average the results not only on the lines but also on the ouputs from previous frames. 
+
+
+### 4. Re Work on the pipeline
+
+- My last submission had issues with the `solidYellowLeft.mp4` file. 
+- The issue was identified in [Identify potential shortcomings with your current pipeline](####3) this README.
+- The primary issue was that both positive and negative slopes fall on same side of the lane.
+- Additionally, the left slope will cross over the right slope line and versa.
+![image100](./data/pics/white_yellow_bad.png)
+
+
+### Fix for the issue
+- In the re-work, I was focusing on solving the following issues.
+
+Sample issue 1| Sample issue 2|Sample issue 3
+:-------------------------:|:-------------------------:|:-------------------------:
+![](./data/v2/bad_yellow_v1.png)  | ![](./data/v2/bad_yellow_v2.png)| ![](./data/v2/bad_yellow_v3.png)
+
+#### Idea 
+- The idea was pretty simple. 
+- When generating the slopes, we have have two points `x1,y1` and `x2,y2`.
+- For +ive slopes, only add those points whose `x1` posiiton is greater than top right's x posiiton and `x2` coordinated is less than bottom right's position. 
+- Simiarly, for -ive slopes, add thos points whose x1 positon is less than teh top left position and it's x2 position is more than botton left position.
+
+-  code looks like this
+
+```
+    for x1,y1,x2,y2 in line:
+            point_s = x1,y1,x2,y2
+            slopes = (y2-y1)/(x2-x1)
+            if slopes > 0:
+            		## trick for positive slope
+                if (x1 > top_right[0] and x2 < botton_right[0]):
+                    positive_slopes.append([slopes, point_s])                    
+            else:
+            		# trick for negative slope
+                if (x1 < top_left[0] and x2 > botton_left[0]):
+                    negative_slopes.append([slopes, point_s])
+```
+
+- This result in great improvements. 
+
+- The best paramter for running the pipeline was chose using the earlier CV approach. 
+- Outputs of the images under all 3 modes. 
+
+Mode 1| 
+:-------------------------:|
+![](./data/v2/yellow_mode_1.png)  | 
+
+Mode 2| 
+:-------------------------:|
+![](./data/v2/yellow_mode_2.png)| 
+
+Mode 3| 
+:-------------------------:|
+![](./data/v2/yellow_mode_3.png)|
+
+
+- the sequence of image generated by the Pipeline 
+![](./data/v2/yellow_pipe.png)
+
+## Final Vidoes (v2 version)
+- SolidWhiteRight: 
+
+[![SolidWhiteRight](./data/pics/laneLines_thirdPass.jpg)](./data/v2/white_v2.mp4 "SolidWhiteRight")
+
+
+- SolidYellowLeft: 
+
+[![SolidWhiteRight](./data/pics/yellow_video_nail.png)](./data/v2/yellow_mode_3.mp4 "SolidYellowLeft")
